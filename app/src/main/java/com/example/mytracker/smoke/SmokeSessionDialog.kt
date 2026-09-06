@@ -5,7 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -37,6 +42,7 @@ fun SmokeSessionDialog(
     epochDay: Long,
     onTimeChange: (Int) -> Unit,
     onPuffsChange: (String) -> Unit,
+    onPuffsStep: (Int) -> Unit,
     onCbdChange: (Boolean) -> Unit,
     onRatingDuringChange: (Int?) -> Unit,
     onRatingAfterChange: (Int?) -> Unit,
@@ -65,14 +71,34 @@ fun SmokeSessionDialog(
                     defaultMinuteOfDay = draft.minuteOfDay,
                 )
 
-                OutlinedTextField(
-                    value = draft.puffsText,
-                    onValueChange = onPuffsChange,
-                    label = { Text("Züge (optional)") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                // Counting up beats typing: the Züge are usually known as "einer mehr als eben",
+                // and reaching for the keyboard mid-session is what stops them being counted at
+                // all. The field stays writable for the times a whole number is already known.
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                )
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OutlinedTextField(
+                        value = draft.puffsText,
+                        onValueChange = onPuffsChange,
+                        label = { Text("Züge (optional)") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                    )
+                    FilledTonalIconButton(
+                        onClick = { onPuffsStep(-1) },
+                        // Nothing to take away from an uncounted session, and a button that would
+                        // do nothing is better greyed than silently ignored.
+                        enabled = draft.puffsText.isNotEmpty(),
+                    ) {
+                        Icon(Icons.Filled.Remove, contentDescription = "Ein Zug weniger")
+                    }
+                    FilledTonalIconButton(onClick = { onPuffsStep(1) }) {
+                        Icon(Icons.Filled.Add, contentDescription = "Ein Zug mehr")
+                    }
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

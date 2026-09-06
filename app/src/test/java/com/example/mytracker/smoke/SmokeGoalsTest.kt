@@ -120,6 +120,21 @@ class SmokeGoalsTest {
         assertFalse("Die Woche ist es nicht", statuses.last().isMet)
     }
 
+    /**
+     * The − and + beside the Züge field. The pair has to be able to reach every state the field can
+     * be in, "nicht gezählt" included — otherwise the buttons are a one-way door into a count.
+     */
+    @Test
+    fun steppingTheZuegeReachesEmptyInBothDirections() {
+        assertEquals("1", steppedPuffs("", 1))
+        assertEquals("7", steppedPuffs("6", 1))
+        assertEquals("5", steppedPuffs("6", -1))
+        // Down from one is back to "nicht gezählt", not to a zero nobody logs.
+        assertEquals("", steppedPuffs("1", -1))
+        // And down from there stays there rather than going negative.
+        assertEquals("", steppedPuffs("", -1))
+    }
+
     @Test
     fun aSessionSaysOnlyWhatWasActuallyRecorded() {
         assertEquals("12:00", session().summaryLabel())

@@ -128,6 +128,7 @@ fun SmokeScreen(
             epochDay = uiState.epochDay,
             onTimeChange = viewModel::onTimeChange,
             onPuffsChange = viewModel::onPuffsChange,
+            onPuffsStep = viewModel::stepPuffs,
             onCbdChange = viewModel::onCbdChange,
             onRatingDuringChange = viewModel::onRatingDuringChange,
             onRatingAfterChange = viewModel::onRatingAfterChange,

@@ -136,6 +136,9 @@ class SmokeViewModel @Inject constructor(
     /** Digits only: the Züge are a count, and a stray letter would silently drop the whole value. */
     fun onPuffsChange(value: String) = editDraft { it.copy(puffsText = value.filter(Char::isDigit)) }
 
+    /** One Zug up or down — see [steppedPuffs]. */
+    fun stepPuffs(delta: Int) = editDraft { it.copy(puffsText = steppedPuffs(it.puffsText, delta)) }
+
     fun onCbdChange(cbd: Boolean) = editDraft { it.copy(cbd = cbd) }
 
     /** Null takes the rating off again — the sliders can be switched off, see the screen. */
@@ -163,4 +166,17 @@ class SmokeViewModel @Inject constructor(
     fun delete(session: SmokeSession) {
         viewModelScope.launch { smokeRepository.delete(session) }
     }
+}
+
+/**
+ * The Züge field one step further, as the − and + beside it move it.
+ *
+ * Empty is "nicht gezählt", not zero, and the steps keep that reachable in both directions: "+" on
+ * an empty field starts at 1, and "−" on a 1 empties it again rather than stopping there. Without
+ * that last step the buttons could take the field *into* a count but never back out of one, and
+ * "nicht gezählt" would be typeable only with the keyboard.
+ */
+fun steppedPuffs(current: String, delta: Int): String {
+    val next = (current.toIntOrNull() ?: 0) + delta
+    return if (next <= 0) "" else next.toString()
 }
