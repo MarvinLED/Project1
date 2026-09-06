@@ -21,6 +21,9 @@ import com.example.mytracker.habit.HabitType
 import com.example.mytracker.nutrition.diary.goalTargetLabel
 import com.example.mytracker.sleep.SleepEntry
 import com.example.mytracker.sleep.sleepGoalStatuses
+import com.example.mytracker.smoke.SmokeGoals
+import com.example.mytracker.smoke.SmokeSession
+import com.example.mytracker.smoke.smokeGoalStatuses
 import com.example.mytracker.task.TaskStatus
 import com.example.mytracker.task.dueLabel
 import com.example.mytracker.task.dueToday
@@ -244,6 +247,29 @@ fun sleepGoalRows(
     sleepGoalStatuses(entry, durationGoalMinutes, bedtimeGoalMinuteOfDay).map { status ->
         DayGoalRow(
             id = "sleep-${status.label}",
+            label = status.label,
+            valueText = status.valueText,
+            isMet = status.isMet,
+            fraction = status.fraction,
+        )
+    }
+
+/**
+ * The Smoken limits, day and week alike. The week is here rather than left to the Smoken screen for
+ * the same reason the Fitness-Wochenziele are: a limit nobody sees until the week is over is a
+ * limit that cannot be kept.
+ *
+ * Note that "erreicht" reads backwards here — these are maxima, so a met row means *still under*
+ * the limit, and a day with nothing logged is met.
+ */
+fun smokeGoalRows(
+    daySessions: List<SmokeSession>,
+    weekSessions: List<SmokeSession>,
+    goals: SmokeGoals,
+): List<DayGoalRow> =
+    smokeGoalStatuses(daySessions, weekSessions, goals).map { status ->
+        DayGoalRow(
+            id = "smoke-${status.label}",
             label = status.label,
             valueText = status.valueText,
             isMet = status.isMet,

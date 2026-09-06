@@ -93,6 +93,11 @@ data class GoalsDto(
     val sleepDurationMinMinutes: Double? = null,
     val sleepDurationMaxMinutes: Double? = null,
     val bedtimeGoalMinuteOfDay: Int? = null,
+    /** The Smoken limits, each null for "kein Ziel" — see `UserPreferences.maxSmokeSessionsPerDay`. */
+    val maxSmokeSessionsPerDay: Int? = null,
+    val maxSmokePuffsPerDay: Int? = null,
+    val maxSmokeSessionsPerWeek: Int? = null,
+    val maxSmokePuffsPerWeek: Int? = null,
     val fitnessGoals: List<FitnessGoalDto> = emptyList(),
     val strengthMaxWeightGoals: List<StrengthMaxWeightGoalDto> = emptyList(),
     val fitnessGoalChanges: List<FitnessGoalChangeDto> = emptyList(),
@@ -228,6 +233,10 @@ class GoalsExportProvider @Inject constructor(
                 sleepDurationMinMinutes = prefs.sleepDurationGoalMinutes?.min,
                 sleepDurationMaxMinutes = prefs.sleepDurationGoalMinutes?.max,
                 bedtimeGoalMinuteOfDay = prefs.bedtimeGoalMinuteOfDay,
+                maxSmokeSessionsPerDay = prefs.maxSmokeSessionsPerDay,
+                maxSmokePuffsPerDay = prefs.maxSmokePuffsPerDay,
+                maxSmokeSessionsPerWeek = prefs.maxSmokeSessionsPerWeek,
+                maxSmokePuffsPerWeek = prefs.maxSmokePuffsPerWeek,
                 fitnessGoals = fitnessGoalDao.getAllOnce().map { it.toDto() },
                 strengthMaxWeightGoals = maxWeightGoalDao.getAllOnce().map { it.toDto() },
                 fitnessGoalChanges = fitnessGoalChangeDao.getAllOnce().map { it.toDto() },
@@ -259,6 +268,19 @@ class GoalsExportProvider @Inject constructor(
         if (existing.bedtimeGoalMinuteOfDay == null) {
             userPreferencesRepository.setBedtimeGoal(dto.bedtimeGoalMinuteOfDay)
         }
+        // All four written at once, so the same-shaped check has to cover all four: only a device
+        // with no Smoken limit at all takes the backup's, which keeps a locally set limit from
+        // being half-overwritten by an older file.
+        if (existing.maxSmokeSessionsPerDay == null && existing.maxSmokePuffsPerDay == null &&
+            existing.maxSmokeSessionsPerWeek == null && existing.maxSmokePuffsPerWeek == null
+        ) {
+            userPreferencesRepository.setSmokeGoals(
+                maxSessionsPerDay = dto.maxSmokeSessionsPerDay,
+                maxPuffsPerDay = dto.maxSmokePuffsPerDay,
+                maxSessionsPerWeek = dto.maxSmokeSessionsPerWeek,
+                maxPuffsPerWeek = dto.maxSmokePuffsPerWeek,
+            )
+        }
         dto.fitnessGoals.forEach { goalDto ->
             if (fitnessGoalDao.getById(goalDto.id) == null) {
                 fitnessGoalDao.upsert(goalDto.toEntity())
@@ -289,6 +311,7 @@ class GoalsExportProvider @Inject constructor(
         Nutrient.entries.forEach { userPreferencesRepository.setNutrientGoal(it, null) }
         userPreferencesRepository.setSleepDurationGoal(null)
         userPreferencesRepository.setBedtimeGoal(null)
+        userPreferencesRepository.setSmokeGoals(null, null, null, null)
         fitnessGoalDao.deleteAll()
         maxWeightGoalDao.deleteAll()
         fitnessGoalChangeDao.deleteAll()

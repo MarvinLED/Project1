@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.Bedtime
+import androidx.compose.material.icons.filled.SmokingRooms
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.Task
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -25,6 +26,7 @@ import com.example.mytracker.habit.HabitRoute
 import com.example.mytracker.measurement.MeasurementRoute
 import com.example.mytracker.nutrition.library.LibraryRoute
 import com.example.mytracker.sleep.SleepRoute
+import com.example.mytracker.smoke.SmokeRoute
 import com.example.mytracker.task.TaskRoute
 import com.example.mytracker.ui.theme.AppDomain
 
@@ -101,6 +103,13 @@ enum class DrawerDestination(
         labelRes = R.string.nav_sleep,
         icon = Icons.Filled.Bedtime,
         domain = AppDomain.SLEEP,
+    ),
+    SMOKE(
+        route = SmokeRoute,
+        routeQualifiedName = SmokeRoute::class.qualifiedName!!,
+        labelRes = R.string.nav_smoke,
+        icon = Icons.Filled.SmokingRooms,
+        domain = AppDomain.SMOKE,
     ),
     BLOOD_PRESSURE(
         route = BloodPressureRoute,

@@ -16,7 +16,7 @@ enum class BackupScope(val label: String, val description: String) {
     DAILY_ENTRIES(
         label = "Tägliche Einträge",
         description = "Tagebuch, Flüssigkeiten, Training, Gewicht, Maße, Blutdruck, Schlaf, " +
-            "Habit-Check-ins und erledigte Aufgaben.",
+            "Smoken, Habit-Check-ins und erledigte Aufgaben.",
     ),
     LIBRARY(
         label = "Bibliothek, Übungen & Ziele",

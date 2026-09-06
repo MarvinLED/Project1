@@ -14,6 +14,8 @@ import com.example.mytracker.fluid.FluidRepository
 import com.example.mytracker.habit.HabitRepository
 import com.example.mytracker.nutrition.diary.DiaryRepository
 import com.example.mytracker.sleep.SleepRepository
+import com.example.mytracker.smoke.SmokeRepository
+import com.example.mytracker.smoke.smokeGoals
 import com.example.mytracker.task.TaskRepository
 import com.example.mytracker.task.taskStatuses
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +41,7 @@ class DayGoalsViewModel @Inject constructor(
     private val fitnessGoalRepository: FitnessGoalRepository,
     strengthExerciseRepository: StrengthExerciseRepository,
     sleepRepository: SleepRepository,
+    smokeRepository: SmokeRepository,
     taskRepository: TaskRepository,
     gameLedgerRepository: GameLedgerRepository,
 ) : ViewModel() {
@@ -112,6 +115,20 @@ class DayGoalsViewModel @Inject constructor(
         ).asSection("Schlaf")
     }
 
+    // Both periods, unlike most of this screen: a Wochenlimit is exactly the kind of goal that is
+    // blown on a Wednesday and only noticed on a Sunday. The week is the calendar one the day falls
+    // in — see DateUtils.startOfWeekEpochDay.
+    private val smokeSection = combine(
+        userPreferencesRepository.userPreferences,
+        smokeRepository.observeForDay(today),
+        smokeRepository.observeInRange(
+            DateUtils.startOfWeekEpochDay(today),
+            DateUtils.startOfWeekEpochDay(today) + 6,
+        ),
+    ) { prefs, daySessions, weekSessions ->
+        smokeGoalRows(daySessions, weekSessions, prefs.smokeGoals).asSection("Smoken")
+    }
+
     // Unlike the rest of this screen, a task is not a target that the day's logging is measured
     // against — it is something to go and do. That is why it leads: it is the only section anyone
     // can act on directly.
@@ -131,6 +148,7 @@ class DayGoalsViewModel @Inject constructor(
         habitSection,
         fitnessSection,
         sleepSection,
+        smokeSection,
     ) { sections -> sections.filterNotNull() }
 
     /**

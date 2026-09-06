@@ -46,6 +46,18 @@ data class UserPreferences(
      * see `com.example.mytracker.sleep.isBedtimeMet`. Null means no bedtime goal.
      */
     val bedtimeGoalMinuteOfDay: Int? = null,
+    /**
+     * The Smoken limits, each null for "kein Ziel". Held as four plain numbers rather than as the
+     * `SmokeGoals` they are read as, so this file keeps depending on nothing but itself; the smoke
+     * module puts them back together — see `com.example.mytracker.smoke.smokeGoals`.
+     *
+     * All four are **maxima**. This is the one area where the goal is to stay under a number, which
+     * is why they are not [NutrientGoal]s: a lower bound here would be a target to smoke more.
+     */
+    val maxSmokeSessionsPerDay: Int? = null,
+    val maxSmokePuffsPerDay: Int? = null,
+    val maxSmokeSessionsPerWeek: Int? = null,
+    val maxSmokePuffsPerWeek: Int? = null,
 ) {
     /**
      * The calorie goal as a plain number, for the many places that only need "what am I aiming at".
@@ -106,6 +118,11 @@ class UserPreferencesRepository @Inject constructor(
         val SLEEP_DURATION_MIN = doublePreferencesKey("sleep_duration_goal_minutes_min")
         val SLEEP_DURATION_MAX = doublePreferencesKey("sleep_duration_goal_minutes_max")
         val BEDTIME_GOAL = intPreferencesKey("bedtime_goal_minute_of_day")
+
+        val SMOKE_MAX_SESSIONS_DAY = intPreferencesKey("smoke_max_sessions_per_day")
+        val SMOKE_MAX_PUFFS_DAY = intPreferencesKey("smoke_max_puffs_per_day")
+        val SMOKE_MAX_SESSIONS_WEEK = intPreferencesKey("smoke_max_sessions_per_week")
+        val SMOKE_MAX_PUFFS_WEEK = intPreferencesKey("smoke_max_puffs_per_week")
     }
 
     /**
@@ -140,6 +157,10 @@ class UserPreferencesRepository @Inject constructor(
                 max = prefs[Keys.SLEEP_DURATION_MAX],
             ).takeUnless { it.isEmpty },
             bedtimeGoalMinuteOfDay = prefs[Keys.BEDTIME_GOAL],
+            maxSmokeSessionsPerDay = prefs[Keys.SMOKE_MAX_SESSIONS_DAY],
+            maxSmokePuffsPerDay = prefs[Keys.SMOKE_MAX_PUFFS_DAY],
+            maxSmokeSessionsPerWeek = prefs[Keys.SMOKE_MAX_SESSIONS_WEEK],
+            maxSmokePuffsPerWeek = prefs[Keys.SMOKE_MAX_PUFFS_WEEK],
         )
     }
 
@@ -165,6 +186,31 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setBedtimeGoal(minuteOfDay: Int?) {
         context.userPreferencesDataStore.edit { prefs ->
             if (minuteOfDay != null) prefs[Keys.BEDTIME_GOAL] = minuteOfDay else prefs.remove(Keys.BEDTIME_GOAL)
+        }
+    }
+
+    /**
+     * The four Smoken limits at once: each null removes that limit. Written together because the
+     * Ziele screen saves the whole form, and a limit that was emptied there has to disappear rather
+     * than survive as the last number that was typed.
+     *
+     * Zero is kept rather than treated as "no goal" — "gar nicht rauchen" is the strictest version
+     * of this goal, not the absence of one.
+     */
+    suspend fun setSmokeGoals(
+        maxSessionsPerDay: Int?,
+        maxPuffsPerDay: Int?,
+        maxSessionsPerWeek: Int?,
+        maxPuffsPerWeek: Int?,
+    ) {
+        context.userPreferencesDataStore.edit { prefs ->
+            fun put(key: androidx.datastore.preferences.core.Preferences.Key<Int>, value: Int?) {
+                if (value != null) prefs[key] = value else prefs.remove(key)
+            }
+            put(Keys.SMOKE_MAX_SESSIONS_DAY, maxSessionsPerDay)
+            put(Keys.SMOKE_MAX_PUFFS_DAY, maxPuffsPerDay)
+            put(Keys.SMOKE_MAX_SESSIONS_WEEK, maxSessionsPerWeek)
+            put(Keys.SMOKE_MAX_PUFFS_WEEK, maxPuffsPerWeek)
         }
     }
 

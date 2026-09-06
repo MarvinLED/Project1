@@ -1111,4 +1111,49 @@ class MigrationTest {
         }
         db.close()
     }
+
+    @Test
+    fun migrate29To30_addsTheEmptySmokeTableAndKeepsWhatWasThereBefore() {
+        val v29 = helper.createDatabase(dbName, 29)
+        v29.execSQL(
+            "INSERT INTO sleep_entries (id, epochDay, startMinuteOfDay, endMinuteOfDay, " +
+                "morningFitness, lastMealMinuteOfDay, didNotSleep, createdAt) " +
+                "VALUES ('sleep-20000', 20000, 1390, 405, 7, 1230, 0, 1700000000000)",
+        )
+        v29.close()
+
+        val db = helper.runMigrationsAndValidate(dbName, 30, true, MIGRATION_29_30)
+
+        // A new table for a new category, so nothing existing is touched by it.
+        db.query("SELECT morningFitness FROM sleep_entries WHERE id = 'sleep-20000'").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(7, cursor.getInt(0))
+        }
+        db.query("SELECT COUNT(*) FROM smoke_sessions").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(0, cursor.getInt(0))
+        }
+
+        // The optional columns really are optional: only the time and the CBD flag are required, and
+        // two sessions may share a minute — there is no unique key over (Tag, Uhrzeit) here.
+        db.execSQL(
+            "INSERT INTO smoke_sessions (id, epochDay, minuteOfDay, puffs, cbd, ratingDuring, " +
+                "ratingAfter, createdAt) VALUES ('s-1', 20000, 750, NULL, 0, NULL, NULL, 1700000000000)",
+        )
+        db.execSQL(
+            "INSERT INTO smoke_sessions (id, epochDay, minuteOfDay, puffs, cbd, ratingDuring, " +
+                "ratingAfter, createdAt) VALUES ('s-2', 20000, 750, 8, 1, 7, 4, 1700000000000)",
+        )
+        db.query("SELECT COUNT(*) FROM smoke_sessions WHERE epochDay = 20000").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(2, cursor.getInt(0))
+        }
+        db.query("SELECT puffs, cbd, ratingDuring FROM smoke_sessions WHERE id = 's-1'").use { cursor ->
+            cursor.moveToFirst()
+            assertTrue(cursor.isNull(0))
+            assertEquals(0, cursor.getInt(1))
+            assertTrue(cursor.isNull(2))
+        }
+        db.close()
+    }
 }

@@ -120,6 +120,14 @@ data class GoalsUiState(
     val sleepDurationMaxHours: String = "",
     /** Minutes since midnight, or null for "kein Ziel" — the field is a clock, not a number. */
     val bedtimeGoalMinuteOfDay: Int? = null,
+    /**
+     * The Smoken limits as typed. Whole numbers, so they are read back with `toIntOrNull` rather
+     * than the decimal parser every other goal here uses — half a Zug is not a thing.
+     */
+    val smokeMaxSessionsPerDay: String = "",
+    val smokeMaxPuffsPerDay: String = "",
+    val smokeMaxSessionsPerWeek: String = "",
+    val smokeMaxPuffsPerWeek: String = "",
 )
 
 @HiltViewModel
@@ -187,6 +195,10 @@ class GoalsViewModel @Inject constructor(
                 sleepDurationMaxHours = prefs.sleepDurationGoalMinutes?.max
                     ?.let { it.toInt().minutesAsHours().formatGoalHours() }.orEmpty(),
                 bedtimeGoalMinuteOfDay = prefs.bedtimeGoalMinuteOfDay,
+                smokeMaxSessionsPerDay = prefs.maxSmokeSessionsPerDay?.toString().orEmpty(),
+                smokeMaxPuffsPerDay = prefs.maxSmokePuffsPerDay?.toString().orEmpty(),
+                smokeMaxSessionsPerWeek = prefs.maxSmokeSessionsPerWeek?.toString().orEmpty(),
+                smokeMaxPuffsPerWeek = prefs.maxSmokePuffsPerWeek?.toString().orEmpty(),
             )
         }
     }
@@ -348,6 +360,26 @@ class GoalsViewModel @Inject constructor(
 
     /** Null clears the bedtime goal — the screen offers that next to the picker. */
     fun onBedtimeGoalChange(minuteOfDay: Int?) { _state.value = _state.value.copy(bedtimeGoalMinuteOfDay = minuteOfDay) }
+
+    /**
+     * Digits only, on all four: these are counts, and a stray character would make the field parse
+     * as null on save — i.e. silently delete the limit the user thinks they just typed.
+     */
+    fun onSmokeMaxSessionsPerDayChange(value: String) {
+        _state.value = _state.value.copy(smokeMaxSessionsPerDay = value.filter(Char::isDigit))
+    }
+
+    fun onSmokeMaxPuffsPerDayChange(value: String) {
+        _state.value = _state.value.copy(smokeMaxPuffsPerDay = value.filter(Char::isDigit))
+    }
+
+    fun onSmokeMaxSessionsPerWeekChange(value: String) {
+        _state.value = _state.value.copy(smokeMaxSessionsPerWeek = value.filter(Char::isDigit))
+    }
+
+    fun onSmokeMaxPuffsPerWeekChange(value: String) {
+        _state.value = _state.value.copy(smokeMaxPuffsPerWeek = value.filter(Char::isDigit))
+    }
 
     fun onNutrientGoalMinChange(nutrient: Nutrient, value: String) {
         updateNutrient(nutrient) { it.copy(minText = value) }
@@ -521,6 +553,14 @@ class GoalsViewModel @Inject constructor(
                 ),
             )
             userPreferencesRepository.setBedtimeGoal(s.bedtimeGoalMinuteOfDay)
+            // All four together, blanks included: an emptied field is an instruction to drop that
+            // limit. Zero survives on purpose — see setSmokeGoals.
+            userPreferencesRepository.setSmokeGoals(
+                maxSessionsPerDay = s.smokeMaxSessionsPerDay.toIntOrNull(),
+                maxPuffsPerDay = s.smokeMaxPuffsPerDay.toIntOrNull(),
+                maxSessionsPerWeek = s.smokeMaxSessionsPerWeek.toIntOrNull(),
+                maxPuffsPerWeek = s.smokeMaxPuffsPerWeek.toIntOrNull(),
+            )
             // Re-read: the history is the one part of this screen that the save itself writes to.
             _state.value = _state.value.copy(
                 goalChanges = goalChangeRows(fitnessGoalRepository.observeGoalChanges().first()),

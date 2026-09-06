@@ -66,6 +66,8 @@ import com.example.mytracker.sleep.SleepRoute
 import com.example.mytracker.sleep.SleepScreen
 import com.example.mytracker.sleep.SleepTagManageRoute
 import com.example.mytracker.sleep.SleepTagManageScreen
+import com.example.mytracker.smoke.SmokeRoute
+import com.example.mytracker.smoke.SmokeScreen
 import com.example.mytracker.task.TaskRoute
 import com.example.mytracker.task.TaskScreen
 import com.example.mytracker.weight.WeightRoute
@@ -91,11 +93,6 @@ fun AppNavHost(
                 },
                 onEditEntry = { entryId -> navController.navigate(DiaryEditEntryRoute(entryId)) },
                 onOpenHistory = { navController.navigate(DiaryHistoryRoute) },
-                // Same navigation as the drawer entry, not a plain navigate: the Bibliothek is a
-                // top-level destination, and pushing one of those as if it were a detail screen
-                // leaves the bottom bar unable to switch away from it again (see
-                // [navigateToTopLevel]).
-                onOpenLibrary = { navController.navigateToTopLevel(LibraryRoute) },
                 onManageFluidQuickAdds = { navController.navigate(FluidQuickAddManageRoute) },
                 onOpenDrawer = onOpenDrawer,
             )
@@ -137,6 +134,14 @@ fun AppNavHost(
         }
         composable<BloodPressureRoute> {
             BloodPressureScreen(onOpenDrawer = onOpenDrawer)
+        }
+        composable<SmokeRoute> {
+            SmokeScreen(
+                onOpenDrawer = onOpenDrawer,
+                // Ziele is a drawer destination, so it goes through navigateToTopLevel like every
+                // other way in — see its KDoc on what a plain navigate does to the nav bar.
+                onOpenGoals = { navController.navigateToTopLevel(GoalsRoute) },
+            )
         }
         composable<SleepRoute> {
             SleepScreen(

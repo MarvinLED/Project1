@@ -42,6 +42,11 @@ enum class AppDomain(private val accent: Color?) {
     // saturated primary: it stays apart from aqua/grün/gelb at a glance without competing with
     // them for attention, and a chore list is not the screen that should shout loudest.
     TASK(Color(0xFF8A6244)), // braun
+    // Same situation as Aufgaben, one slot further on: a desaturated schiefergrau. It is the one
+    // remaining direction that is neither a palette hue nor a near-twin of the braun above, and on
+    // a screen about smoking it reads as what it is rather than as a warning — the judgement here
+    // belongs to the Ziel-Balken, which carries its own grün and rot.
+    SMOKE(Color(0xFF6B7280)), // schiefergrau
     ANALYSE(null),
     GOALS(null),
     LIBRARY(null),

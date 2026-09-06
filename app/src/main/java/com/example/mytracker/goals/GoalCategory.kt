@@ -9,4 +9,5 @@ enum class GoalCategory(val label: String) {
     SLEEP("Schlaf"),
     FLUID("Flüssigkeiten"),
     FITNESS("Fitness"),
+    SMOKE("Smoken"),
 }

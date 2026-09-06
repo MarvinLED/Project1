@@ -122,6 +122,7 @@ fun GoalsScreen(
                 if (shows(GoalCategory.SLEEP)) SleepGoalsSection(state, viewModel)
                 if (shows(GoalCategory.FLUID)) FluidGoalsSection(state, viewModel)
                 if (shows(GoalCategory.FITNESS)) FitnessGoalsSection(state, viewModel)
+                if (shows(GoalCategory.SMOKE)) SmokeGoalsSection(state, viewModel)
             }
         }
     }
@@ -236,6 +237,59 @@ private fun SleepGoalsSection(state: GoalsUiState, viewModel: GoalsViewModel) {
             if (state.bedtimeGoalMinuteOfDay != null) {
                 TextButton(onClick = { viewModel.onBedtimeGoalChange(null) }) { Text("Ziel entfernen") }
             }
+        }
+    }
+}
+
+/**
+ * The four Smoken limits. Upper bounds only, and the section says so — every other goal on this
+ * screen is a number to reach, and a pair of fields labelled the usual way would be read as one.
+ */
+@Composable
+private fun SmokeGoalsSection(state: GoalsUiState, viewModel: GoalsViewModel) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(GoalCategory.SMOKE.label, style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Obergrenzen: so viele Sessions und Züge sollen es höchstens werden. Leer lassen heißt " +
+                "\"kein Ziel\", 0 heißt \"gar nicht\".",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = state.smokeMaxSessionsPerDay,
+                onValueChange = viewModel::onSmokeMaxSessionsPerDayChange,
+                label = { Text("Sessions/Tag") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            OutlinedTextField(
+                value = state.smokeMaxPuffsPerDay,
+                onValueChange = viewModel::onSmokeMaxPuffsPerDayChange,
+                label = { Text("Züge/Tag") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = state.smokeMaxSessionsPerWeek,
+                onValueChange = viewModel::onSmokeMaxSessionsPerWeekChange,
+                label = { Text("Sessions/Woche") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            OutlinedTextField(
+                value = state.smokeMaxPuffsPerWeek,
+                onValueChange = viewModel::onSmokeMaxPuffsPerWeekChange,
+                label = { Text("Züge/Woche") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }

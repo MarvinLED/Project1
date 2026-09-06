@@ -22,6 +22,8 @@ import com.example.mytracker.sleep.SleepEntriesExportProvider
 import com.example.mytracker.sleep.SleepEntry
 import com.example.mytracker.sleep.SleepTag
 import com.example.mytracker.sleep.SleepTagLibraryExportProvider
+import com.example.mytracker.smoke.SmokeSession
+import com.example.mytracker.smoke.SmokeSessionsExportProvider
 import java.time.Instant
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -171,6 +173,25 @@ class DailyEntriesBackupTest {
         assertEquals(7, nights.single().morningFitness)
     }
 
+    /**
+     * Smoken has no library behind it and no natural key: two sessions may share a day and a minute,
+     * so the round trip has to bring back both rather than folding them into one.
+     */
+    @Test
+    fun bothSessionsOfTheSameMinuteComeBack() = runBlocking {
+        source.smokeDao().upsert(smokeSession("s-1", epochDay = 20_004, minuteOfDay = 750, puffs = null))
+        source.smokeDao().upsert(smokeSession("s-2", epochDay = 20_004, minuteOfDay = 750, puffs = 8))
+
+        restore(source, target, BackupScope.DAILY_ENTRIES)
+
+        val sessions = target.smokeDao().getAllOnce().sortedBy { it.id }
+        assertEquals(2, sessions.size)
+        assertNull("Nicht gezählte Züge bleiben nicht gezählt", sessions[0].puffs)
+        assertEquals(8, sessions[1].puffs)
+        assertTrue(sessions[1].cbd)
+        assertEquals(7, sessions[1].ratingDuring)
+    }
+
     /** Ersetzen only empties what was ticked — the other categories are not collateral. */
     @Test
     fun replacingOneCategoryLeavesTheOthersAlone() = runBlocking {
@@ -207,6 +228,18 @@ class DailyEntriesBackupTest {
         DiaryEntriesExportProvider(db.diaryDao(), db.foodDao()),
         StrengthLogExportProvider(db.strengthLogDao(), db.strengthSetDao(), db.strengthExerciseDao()),
         SleepEntriesExportProvider(db.sleepDao(), db.sleepTagDao()),
+        SmokeSessionsExportProvider(db.smokeDao()),
+    )
+
+    private fun smokeSession(id: String, epochDay: Long, minuteOfDay: Int, puffs: Int?) = SmokeSession(
+        id = id,
+        epochDay = epochDay,
+        minuteOfDay = minuteOfDay,
+        puffs = puffs,
+        cbd = puffs != null,
+        ratingDuring = puffs?.let { 7 },
+        ratingAfter = null,
+        createdAt = createdAt,
     )
 
     private fun freshDatabase(): AppDatabase {

@@ -968,3 +968,18 @@ object MIGRATION_28_29 : Migration(28, 29) {
         db.execSQL("ALTER TABLE `food_items` ADD COLUMN `portionUnitName` TEXT")
     }
 }
+
+object MIGRATION_29_30 : Migration(29, 30) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Die Smoken-Sessions. No unique key over (Tag, Uhrzeit): a day holds as many sessions as
+        // there were, and two at the same minute is a fact rather than a duplicate — see
+        // SmokeSession. The index is on epochDay alone, which is what every read here is by.
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `smoke_sessions` (`id` TEXT NOT NULL, " +
+                "`epochDay` INTEGER NOT NULL, `minuteOfDay` INTEGER NOT NULL, `puffs` INTEGER, " +
+                "`cbd` INTEGER NOT NULL, `ratingDuring` INTEGER, `ratingAfter` INTEGER, " +
+                "`createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_smoke_sessions_epochDay` ON `smoke_sessions` (`epochDay`)")
+    }
+}

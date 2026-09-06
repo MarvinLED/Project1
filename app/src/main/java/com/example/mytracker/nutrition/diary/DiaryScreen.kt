@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Undo
@@ -81,7 +80,6 @@ fun DiaryScreen(
     onAddEntry: (Long, MealType) -> Unit,
     onEditEntry: (String) -> Unit,
     onOpenHistory: () -> Unit,
-    onOpenLibrary: () -> Unit,
     onManageFluidQuickAdds: () -> Unit,
     onOpenDrawer: () -> Unit,
     modifier: Modifier = Modifier,
@@ -192,9 +190,9 @@ fun DiaryScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 )
-                // Three across, so the labels are down to a single word each and the icon carries
-                // the rest of the meaning — "Lebensmittel hinzufügen" had already lost its verb at
-                // half the width.
+                // Two: adding, and looking back. The Bibliothek is gone from here — since it became
+                // the screen the "+" opens, this button led to the same place with only the day
+                // missing.
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         // Read at tap time, not at composition: the screen can sit open across the
@@ -217,16 +215,6 @@ fun DiaryScreen(
                         Icon(Icons.Filled.Timeline, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
                         Text("Verlauf", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                    Button(
-                        onClick = onOpenLibrary,
-                        colors = buttonColors,
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(Icons.Filled.Kitchen, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Bibliothek", maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -167,6 +168,18 @@ fun LibraryScreen(
                         value = query,
                         onValueChange = viewModel::onQueryChange,
                         label = { Text("Suche") },
+                        // Only while something is typed: an always-present "x" would take width off
+                        // a field that is already sharing its row with three buttons, and would
+                        // offer to undo nothing. isNotEmpty rather than isNotBlank, so a query of
+                        // nothing but spaces — which filters everything away and looks like a bug —
+                        // can still be cleared.
+                        trailingIcon = {
+                            if (query.isNotEmpty()) {
+                                IconButton(onClick = { viewModel.onQueryChange("") }) {
+                                    Icon(Icons.Filled.Close, contentDescription = "Suche leeren")
+                                }
+                            }
+                        },
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                     )

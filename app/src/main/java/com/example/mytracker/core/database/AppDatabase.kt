@@ -66,6 +66,8 @@ import com.example.mytracker.sleep.SleepEntry
 import com.example.mytracker.sleep.SleepEntryTag
 import com.example.mytracker.sleep.SleepTag
 import com.example.mytracker.sleep.SleepTagDao
+import com.example.mytracker.smoke.SmokeDao
+import com.example.mytracker.smoke.SmokeSession
 import com.example.mytracker.task.Task
 import com.example.mytracker.task.TaskCompletion
 import com.example.mytracker.task.TaskCompletionDao
@@ -109,12 +111,13 @@ import com.example.mytracker.weight.BodyWeightEntry
         NapEntry::class,
         SleepTag::class,
         SleepEntryTag::class,
+        SmokeSession::class,
         Task::class,
         TaskCompletion::class,
         NutrientGoalChange::class,
         GameDayPoints::class,
     ],
-    version = 29,
+    version = 30,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -146,6 +149,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun bloodPressureDao(): BloodPressureDao
     abstract fun sleepDao(): SleepDao
     abstract fun sleepTagDao(): SleepTagDao
+    abstract fun smokeDao(): SmokeDao
     abstract fun taskDao(): TaskDao
     abstract fun taskCompletionDao(): TaskCompletionDao
     abstract fun nutrientGoalChangeDao(): NutrientGoalChangeDao
